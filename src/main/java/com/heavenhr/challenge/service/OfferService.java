@@ -2,10 +2,12 @@ package com.heavenhr.challenge.service;
 
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
+import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
 import com.heavenhr.challenge.repositories.OfferRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -28,5 +30,21 @@ public class OfferService {
         }
 
         return offer.get();
+    }
+
+
+    public Offer createOffer(String offerTitle) {
+
+        Optional<Offer> foundOffer = offerRepository.findByJobTitle(offerTitle);
+        if (foundOffer.isPresent()) {
+            throw new OfferTitleAlreadyExistsException("Offer title already exists");
+        }
+
+        Offer offer = Offer.builder()
+                .startDate(LocalDate.now())
+                .jobTitle(offerTitle)
+                .build();
+
+        return offerRepository.save(offer);
     }
 }

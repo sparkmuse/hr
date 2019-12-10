@@ -2,6 +2,7 @@ package com.heavenhr.challenge.service;
 
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
+import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
 import com.heavenhr.challenge.repositories.OfferRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,5 +84,29 @@ class OfferServiceTest {
         assertThatThrownBy(() -> offerService.getOffer(1L))
                 .isInstanceOf(OfferNotFoundException.class)
                 .hasMessage("Offer with id=%s was not found", 1L);
+    }
+
+
+    @Test
+    @DisplayName("create an offer")
+    void createOffer() {
+
+        when(offerRepository.findByJobTitle("Java Developer")).thenReturn(Optional.empty());
+        when(offerRepository.save(any())).thenReturn(offer);
+
+        Offer actual = offerService.createOffer("Java Developer");
+
+        assertThat(actual).isEqualToComparingFieldByField(offer);
+    }
+
+    @Test
+    @DisplayName("throws OfferNotFoundException when the offer title exists")
+    void createOfferTitleAlreadyExceists() {
+
+        when(offerRepository.findByJobTitle("Java Developer")).thenReturn(Optional.of(offer));
+
+        assertThatThrownBy(() -> offerService.createOffer("Java Developer"))
+                .isInstanceOf(OfferTitleAlreadyExistsException.class)
+                .hasMessage("Offer title already exists");
     }
 }

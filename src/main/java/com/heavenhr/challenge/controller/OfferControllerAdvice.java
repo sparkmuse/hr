@@ -1,6 +1,7 @@
 package com.heavenhr.challenge.controller;
 
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
+import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,5 +16,10 @@ public class OfferControllerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = OfferNotFoundException.class)
     protected ResponseEntity<Object> handleOfferNotFoundException(OfferNotFoundException ex, WebRequest request) {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(value = OfferTitleAlreadyExistsException.class)
+    protected ResponseEntity<Object> handleOfferTitleAlreadyExistsException(OfferTitleAlreadyExistsException ex, WebRequest request) {
+        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 }

@@ -71,4 +71,17 @@ class OfferRepositoryTest {
         assertThat(actual).isEqualTo(expected);
 
     }
+
+    @Test
+    @DisplayName("gets an offer by title")
+    void getOfferByTitle() {
+
+        Offer savedOffer = offerRepository.save(offer);
+        Optional<Offer> expected = Optional.of(savedOffer);
+
+        Optional<Offer> actual = offerRepository.findByJobTitle(savedOffer.getJobTitle());
+
+        assertThat(actual).isEqualTo(expected);
+
+    }
 }

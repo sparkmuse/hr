@@ -2,6 +2,7 @@ package com.heavenhr.challenge.controller;
 
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
+import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
 import com.heavenhr.challenge.service.OfferService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,9 +15,11 @@ import java.time.LocalDate;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -97,5 +100,40 @@ class OfferControllerTest {
 
         mockMvc.perform(get("/offers/1"))
                 .andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    @DisplayName("returns created offer")
+    void returnsCreatedOffer() throws Exception {
+
+        LocalDate startDate = LocalDate.now();
+        Offer offer = Offer.builder()
+                .id(1L)
+                .jobTitle("Java Developer")
+                .startDate(startDate)
+                .numberOfApplications(0)
+                .build();
+
+        when(offerService.createOffer(anyString())).thenReturn(offer);
+
+        mockMvc.perform(post("/offers")
+                    .content("{\"offerTitle\": \"Java Developer\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.jobTitle").value("Java Developer"))
+                .andExpect(jsonPath("$.startDate").value(startDate.toString()))
+                .andExpect(jsonPath("$.numberOfApplications").value(0));
+    }
+
+    @Test
+    @DisplayName("throws exception when offertitle already exists")
+    void alreadyExists() throws Exception {
+
+        when(offerService.createOffer(anyString())).thenThrow(OfferTitleAlreadyExistsException.class);
+
+        mockMvc.perform(post("/offers")
+                .content("{\"offerTitle\": \"Java Developer\"}"))
+                .andExpect(status().isBadRequest());
     }
 }
