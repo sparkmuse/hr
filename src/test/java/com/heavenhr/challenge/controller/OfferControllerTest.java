@@ -1,6 +1,7 @@
 package com.heavenhr.challenge.controller;
 
 import com.heavenhr.challenge.entity.Offer;
+import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.service.OfferService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,12 +13,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.Collections;
 
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = OfferController.class)
+@WebMvcTest(controllers = {OfferController.class, OfferControllerAdvice.class})
 class OfferControllerTest {
 
     @Autowired
@@ -59,5 +63,39 @@ class OfferControllerTest {
         mockMvc.perform(get("/offers"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
+    }
+
+
+    @Test
+    @DisplayName("returns offer")
+    void returnsOneOffer() throws Exception {
+
+        LocalDate startDate = LocalDate.now();
+        Offer offer = Offer.builder()
+                .id(1L)
+                .jobTitle("Java Developer")
+                .startDate(startDate)
+                .numberOfApplications(0)
+                .build();
+
+        when(offerService.getOffer(anyLong())).thenReturn(offer);
+
+        mockMvc.perform(get("/offers/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.jobTitle").value("Java Developer"))
+                .andExpect(jsonPath("$.startDate").value(startDate.toString()))
+                .andExpect(jsonPath("$.numberOfApplications").value(0));
+    }
+
+
+    @Test
+    @DisplayName("throws exception when offer not found")
+    void notFound() throws Exception {
+
+        when(offerService.getOffer(anyLong())).thenThrow(OfferNotFoundException.class);
+
+        mockMvc.perform(get("/offers/1"))
+                .andExpect(status().isNotFound());
     }
 }

@@ -4,6 +4,7 @@ import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.service.OfferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,5 +18,10 @@ public class OfferController {
     @GetMapping
     public Iterable<Offer> getOffers() {
         return offerService.getOffers();
+    }
+
+    @GetMapping(value = "/{offerId}")
+    public Offer getOffer(@PathVariable Long offerId) {
+        return offerService.getOffer(offerId);
     }
 }

@@ -1,7 +1,9 @@
 package com.heavenhr.challenge.service;
 
 import com.heavenhr.challenge.entity.Offer;
+import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.repositories.OfferRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,8 +13,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +32,7 @@ class OfferServiceTest {
     @BeforeEach
     void setUp() {
         offer = Offer.builder()
+                .id(1L)
                 .jobTitle("Java Developer")
                 .startDate(LocalDate.now())
                 .build();
@@ -55,5 +60,27 @@ class OfferServiceTest {
         Iterable<Offer> actual = offerService.getOffers();
 
         assertThat(actual).isEmpty();
+    }
+
+    @Test
+    @DisplayName("returns offer when found")
+    void getOffer() {
+
+        when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
+
+        Offer actual = offerService.getOffer(1L);
+
+        assertThat(actual).isEqualToComparingFieldByField(offer);
+    }
+
+    @Test
+    @DisplayName("throws OfferNotFoundException when the offer is not found")
+    void getOfferNotFound() {
+
+        when(offerRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> offerService.getOffer(1L))
+                .isInstanceOf(OfferNotFoundException.class)
+                .hasMessage("Offer with id=%s was not found", 1L);
     }
 }
