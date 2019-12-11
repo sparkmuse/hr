@@ -4,7 +4,7 @@ import com.heavenhr.challenge.entity.Application;
 import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.entity.Status;
-import com.heavenhr.challenge.exceptions.ApplicationEmailAlreadyExists;
+import com.heavenhr.challenge.exceptions.EmailAlreadyExistsException;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
 import com.heavenhr.challenge.repositories.OfferRepository;
@@ -57,7 +57,7 @@ public class OfferService {
         Offer offer = getOffer(offerId);
 
         if (hasEmail(applicationDto, offer)) {
-            throw new ApplicationEmailAlreadyExists("Email already exists for this application");
+            throw new EmailAlreadyExistsException("Email already exists for this application");
         }
 
         Application application = Application.builder()
@@ -66,7 +66,7 @@ public class OfferService {
                 .status(Status.APPLIED).build();
         offer.addApplication(application);
 
-        return offer;
+        return offerRepository.save(offer);
     }
 
     private boolean hasEmail(ApplicationDto applicationDto, Offer offer) {

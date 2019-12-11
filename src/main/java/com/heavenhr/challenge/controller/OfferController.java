@@ -5,6 +5,7 @@ import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.service.OfferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,7 +37,7 @@ public class OfferController {
         return offerService.createOffer(offerTitle);
     }
 
-    @PostMapping(value = "/{offerId}/applications")
+    @PostMapping(value = "/{offerId}/applications", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public Offer createOffer(@PathVariable Long offerId, @RequestBody ApplicationDto applicationDto) {
         return offerService.createApplication(offerId, applicationDto);

@@ -1,14 +1,18 @@
 package com.heavenhr.challenge.service;
 
+import com.heavenhr.challenge.entity.Application;
+import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
+import com.heavenhr.challenge.entity.Status;
+import com.heavenhr.challenge.exceptions.EmailAlreadyExistsException;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
 import com.heavenhr.challenge.repositories.OfferRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -19,6 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -108,5 +113,51 @@ class OfferServiceTest {
         assertThatThrownBy(() -> offerService.createOffer("Java Developer"))
                 .isInstanceOf(OfferTitleAlreadyExistsException.class)
                 .hasMessage("Offer title already exists");
+    }
+
+    @Test
+    @DisplayName("user can create an application")
+    void createApplication() {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+        ApplicationDto applicationDto = new ApplicationDto("email@email.com", "resume text");
+
+        when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
+        ArgumentCaptor<Offer> offerCapture = ArgumentCaptor.forClass(Offer.class);
+
+        offerService.createApplication(1L, applicationDto);
+        verify(offerRepository).save(offerCapture.capture());
+
+        assertThat(offerCapture.getValue().getApplications())
+                .usingElementComparatorIgnoringFields("id", "offer")
+                .containsExactlyInAnyOrder(application);
+
+    }
+
+    @Test
+    @DisplayName("throws ApplicationEmailAlreadyExists when the email already exists")
+    void throwExceptionWhenEMail() {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+        offer.addApplication(application);
+        ApplicationDto applicationDto = new ApplicationDto("email@email.com", "resume text");
+
+        when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
+
+        assertThatThrownBy(() -> offerService.createApplication(1L, applicationDto))
+                .isInstanceOf(EmailAlreadyExistsException.class)
+                .hasMessage("Email already exists for this application");
     }
 }
