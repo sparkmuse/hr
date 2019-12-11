@@ -1,5 +1,6 @@
 package com.heavenhr.challenge.controller;
 
+import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.service.OfferService;
 import lombok.RequiredArgsConstructor;
@@ -33,5 +34,11 @@ public class OfferController {
     @ResponseStatus(HttpStatus.CREATED)
     public Offer createOffer(@RequestBody String offerTitle) {
         return offerService.createOffer(offerTitle);
+    }
+
+    @PostMapping(value = "/{offerId}/applications")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Offer createOffer(@PathVariable Long offerId, @RequestBody ApplicationDto applicationDto) {
+        return offerService.createApplication(offerId, applicationDto);
     }
 }

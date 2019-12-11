@@ -21,7 +21,6 @@ public class Application {
     @GeneratedValue
     private Long id;
 
-    @Column(unique = true)
     private String candidateEmail;
 
     private String resumeText;
