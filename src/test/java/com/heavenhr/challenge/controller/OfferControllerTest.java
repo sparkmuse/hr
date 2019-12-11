@@ -187,4 +187,48 @@ class OfferControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("returns all applications for an offer")
+    void returnsApplications() throws Exception {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+
+        when(offerService.getApplications(anyLong())).thenReturn(Collections.singletonList(application));
+
+        mockMvc.perform(get("/offers/1/applications"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].candidateEmail").value("email@email.com"))
+                .andExpect(jsonPath("$[0].resumeText").value("resume text"))
+                .andExpect(jsonPath("$[0].status").value(Status.APPLIED.toString()));
+    }
+
+    @Test
+    @DisplayName("returns one applications for an offer by the Application id")
+    void returnsApplication() throws Exception {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+
+        when(offerService.getApplication(anyLong(), anyLong())).thenReturn(application);
+
+        mockMvc.perform(get("/offers/1/applications/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.candidateEmail").value("email@email.com"))
+                .andExpect(jsonPath("$.resumeText").value("resume text"))
+                .andExpect(jsonPath("$.status").value(Status.APPLIED.toString()));
+    }
 }

@@ -1,8 +1,10 @@
 package com.heavenhr.challenge.controller;
 
+import com.heavenhr.challenge.entity.Application;
 import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.service.OfferService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/offers")
@@ -39,7 +43,17 @@ public class OfferController {
 
     @PostMapping(value = "/{offerId}/applications", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public Offer createOffer(@PathVariable Long offerId, @RequestBody ApplicationDto applicationDto) {
+    public Offer createOfferApplication(@PathVariable Long offerId, @RequestBody ApplicationDto applicationDto) {
         return offerService.createApplication(offerId, applicationDto);
+    }
+
+    @GetMapping(value = "/{offerId}/applications")
+    public Iterable<Application> getApplications(@PathVariable Long offerId) {
+        return offerService.getApplications(offerId);
+    }
+
+    @GetMapping(value = "/{offerId}/applications/{applicationId}")
+    public Application getApplications(@PathVariable Long offerId, @PathVariable Long applicationId) {
+        return offerService.getApplication(offerId, applicationId);
     }
 }

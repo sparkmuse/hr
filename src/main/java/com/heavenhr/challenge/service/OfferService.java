@@ -4,6 +4,7 @@ import com.heavenhr.challenge.entity.Application;
 import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.entity.Status;
+import com.heavenhr.challenge.exceptions.ApplicationNotFoundException;
 import com.heavenhr.challenge.exceptions.EmailAlreadyExistsException;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,14 +28,9 @@ public class OfferService {
 
     public Offer getOffer(Long offerId) {
 
-        Optional<Offer> offer = offerRepository.findById(offerId);
-
-        if (offer.isEmpty()) {
-            String message = String.format("Offer with id=%d was not found", offerId);
-            throw new OfferNotFoundException(message);
-        }
-
-        return offer.get();
+        return offerRepository
+                .findById(offerId)
+                .orElseThrow(() -> new OfferNotFoundException(String.format("Offer with id=%d was not found", offerId)));
     }
 
 
@@ -73,5 +70,17 @@ public class OfferService {
         return offer.getApplications()
                 .stream()
                 .anyMatch(a -> a.getCandidateEmail().equals(applicationDto.getCandidateEmail()));
+    }
+
+    public Iterable<Application> getApplications(Long offerId) {
+        return getOffer(offerId).getApplications();
+    }
+
+    public Application getApplication(Long offerId, Long applicationId) {
+        return getOffer(offerId).getApplications()
+                .stream()
+                .filter(a -> a.getId().equals(applicationId))
+                .findFirst()
+                .orElseThrow(() -> new ApplicationNotFoundException("Application was not found"));
     }
 }

@@ -160,4 +160,23 @@ class OfferServiceTest {
                 .isInstanceOf(EmailAlreadyExistsException.class)
                 .hasMessage("Email already exists for this application");
     }
+
+    @Test
+    @DisplayName("returns application for the offer")
+    void getApplication() {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+        offer.addApplication(application);
+        when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
+
+        Application actual = offerService.getApplication(1L, 1L);
+
+        assertThat(actual).isEqualToComparingFieldByField(application);
+    }
 }
