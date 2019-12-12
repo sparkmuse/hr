@@ -26,8 +26,4 @@ public class Application {
     private String resumeText;
 
     private Status status;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "offer_id")
-    private Offer offer;
 }

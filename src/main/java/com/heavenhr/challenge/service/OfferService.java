@@ -61,7 +61,7 @@ public class OfferService {
                 .candidateEmail(applicationDto.getCandidateEmail())
                 .resumeText(applicationDto.getResumeText())
                 .status(Status.APPLIED).build();
-        offer.addApplication(application);
+        offer.getApplications().add(application);
 
         return offerRepository.save(offer);
     }

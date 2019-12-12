@@ -151,7 +151,7 @@ class OfferServiceTest {
                 .resumeText("resume text")
                 .status(Status.APPLIED)
                 .build();
-        offer.addApplication(application);
+        offer.getApplications().add(application);
         ApplicationDto applicationDto = new ApplicationDto("email@email.com", "resume text");
 
         when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
@@ -172,7 +172,7 @@ class OfferServiceTest {
                 .resumeText("resume text")
                 .status(Status.APPLIED)
                 .build();
-        offer.addApplication(application);
+        offer.getApplications().add(application);
         when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
 
         Application actual = offerService.getApplication(1L, 1L);

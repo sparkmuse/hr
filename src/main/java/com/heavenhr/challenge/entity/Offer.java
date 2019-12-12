@@ -30,7 +30,8 @@ public class Offer {
     private LocalDate startDate;
 
     @Builder.Default
-    @OneToMany(mappedBy = "offer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "offer_id")
     private List<Application> applications = new ArrayList<>();
 
     @Transient
@@ -39,15 +40,5 @@ public class Offer {
 
     public int getNumberOfApplications() {
         return this.applications.size();
-    }
-
-    public void addApplication(Application application) {
-        applications.add(application);
-        application.setOffer(this);
-    }
-
-    public void removeApplication(Application application) {
-        applications.remove(application);
-        application.setOffer(null);
     }
 }
