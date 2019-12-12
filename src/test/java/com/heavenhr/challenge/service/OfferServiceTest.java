@@ -4,6 +4,7 @@ import com.heavenhr.challenge.entity.Application;
 import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.entity.Status;
+import com.heavenhr.challenge.exceptions.ApplicationNotFoundException;
 import com.heavenhr.challenge.exceptions.EmailAlreadyExistsException;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +34,9 @@ class OfferServiceTest {
     @Mock
     private OfferRepository offerRepository;
 
+    @Mock
+    private NotifierService notifierService;
+
     private OfferService offerService;
 
     private Offer offer;
@@ -44,7 +49,7 @@ class OfferServiceTest {
                 .startDate(LocalDate.now())
                 .build();
 
-        offerService = new OfferService(offerRepository);
+        offerService = new OfferService(offerRepository, notifierService);
     }
 
     @Test
@@ -180,10 +185,28 @@ class OfferServiceTest {
         assertThat(actual).isEqualToComparingFieldByField(application);
     }
 
+    @Test
+    @DisplayName("returns all applications for the offer")
+    void getApplications() {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+        offer.getApplications().add(application);
+        when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
+
+        Iterable<Application> actual = offerService.getApplications(1L);
+
+        assertThat(actual).containsExactlyInAnyOrder(application);
+    }
 
     @Test
     @DisplayName("updates and returns application for the offer")
-    void updatepplication() {
+    void updateApplication() {
 
         Application application = Application
                 .builder()
@@ -204,5 +227,54 @@ class OfferServiceTest {
         Application actual = offerService.updateApplication(1L, 1L, expected);
 
         assertThat(actual).isEqualToComparingFieldByField(expected);
+    }
+
+    @Test
+    @DisplayName("throws exception when application is not found.")
+    void updateApplicationException() {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+        Application expected = Application
+                .builder()
+                .status(Status.INVITED)
+                .build();
+
+        when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
+
+        assertThatThrownBy(() -> offerService.updateApplication(1L, 1L, expected))
+                .isInstanceOf(ApplicationNotFoundException.class)
+                .hasMessage("Application was not found");
+
+    }
+
+    @Test
+    @DisplayName("update an application status sends a notification")
+    void updateApplicationNotification() {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+        offer.getApplications().add(application);
+
+        Application expected = Application
+                .builder()
+                .status(Status.INVITED)
+                .build();
+
+        when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
+
+        offerService.updateApplication(1L, 1L, expected);
+
+        verify(notifierService).send(application);
     }
 }

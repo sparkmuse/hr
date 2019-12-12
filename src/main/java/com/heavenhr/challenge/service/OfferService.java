@@ -11,6 +11,7 @@ import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
 import com.heavenhr.challenge.repositories.OfferRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.metadata.HsqlTableMetaDataProvider;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class OfferService {
 
     private final OfferRepository offerRepository;
+    private final NotifierService notifierService;
 
     public Iterable<Offer> getOffers() {
         return offerRepository.findAll();
@@ -82,7 +84,10 @@ public class OfferService {
         Offer offer = getOfferInternal(offerId);
         Application found = getApplicationInternal(offer, applicationId);
 
-        found.setStatus(application.getStatus());
+        if (found.getStatus() != application.getStatus()) {
+            found.setStatus(application.getStatus());
+            notifierService.send(found);
+        }
 
         offerRepository.save(offer);
 

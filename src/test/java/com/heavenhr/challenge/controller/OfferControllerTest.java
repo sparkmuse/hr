@@ -5,6 +5,7 @@ import com.heavenhr.challenge.entity.Application;
 import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
 import com.heavenhr.challenge.entity.Status;
+import com.heavenhr.challenge.exceptions.ApplicationNotFoundException;
 import com.heavenhr.challenge.exceptions.EmailAlreadyExistsException;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
@@ -270,5 +271,26 @@ class OfferControllerTest {
                 .andExpect(jsonPath("$.candidateEmail").value("email@email.com"))
                 .andExpect(jsonPath("$.resumeText").value("resume text"))
                 .andExpect(jsonPath("$.status").value(Status.INVITED.toString()));
+    }
+
+    @Test
+    @DisplayName("throws exception when application is not found")
+    void applicationNotFound() throws Exception {
+
+        Application invitedApplication = Application.builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.INVITED)
+                .build();
+        String json = new ObjectMapper().writeValueAsString(invitedApplication);
+
+        when(offerService.updateApplication(anyLong(),anyLong(), any(Application.class)))
+                .thenThrow(ApplicationNotFoundException.class);
+
+        mockMvc.perform(put("/offers/1/applications/1")
+                    .content(json)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

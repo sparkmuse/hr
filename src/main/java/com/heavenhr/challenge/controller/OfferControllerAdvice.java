@@ -1,5 +1,6 @@
 package com.heavenhr.challenge.controller;
 
+import com.heavenhr.challenge.exceptions.ApplicationNotFoundException;
 import com.heavenhr.challenge.exceptions.EmailAlreadyExistsException;
 import com.heavenhr.challenge.exceptions.OfferNotFoundException;
 import com.heavenhr.challenge.exceptions.OfferTitleAlreadyExistsException;
@@ -26,6 +27,11 @@ public class OfferControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = EmailAlreadyExistsException.class)
     protected ResponseEntity<Object> handleApplicationEmailAlreadyExists(EmailAlreadyExistsException ex, WebRequest request) {
+        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(value = ApplicationNotFoundException.class)
+    protected ResponseEntity<Object> handleApplicationNotFoundException(ApplicationNotFoundException ex, WebRequest request) {
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 }
