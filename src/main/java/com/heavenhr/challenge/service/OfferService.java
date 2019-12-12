@@ -91,7 +91,7 @@ public class OfferService {
 
         offerRepository.save(offer);
 
-        return application;
+        return found;
     }
 
     private Offer getOfferInternal(Long offerId) {
