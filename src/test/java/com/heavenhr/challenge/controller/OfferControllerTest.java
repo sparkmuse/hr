@@ -1,5 +1,6 @@
 package com.heavenhr.challenge.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.heavenhr.challenge.entity.Application;
 import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
@@ -229,5 +230,45 @@ class OfferControllerTest {
                 .andExpect(jsonPath("$.candidateEmail").value("email@email.com"))
                 .andExpect(jsonPath("$.resumeText").value("resume text"))
                 .andExpect(jsonPath("$.status").value(Status.APPLIED.toString()));
+    }
+
+
+    @Test
+    @DisplayName("updates application for offer")
+    void updateApplication() throws Exception {
+
+        LocalDate startDate = LocalDate.now();
+        Offer offer = Offer.builder()
+                .id(1L)
+                .jobTitle("Java Developer")
+                .startDate(startDate)
+                .numberOfApplications(0)
+                .build();
+        Application application = Application
+                .builder()
+                .id(1L)
+                .status(Status.APPLIED)
+                .build();
+        offer.getApplications().add(application);
+
+        Application invitedApplication = Application.builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.INVITED)
+                .build();
+        String json = new ObjectMapper().writeValueAsString(invitedApplication);
+
+        when(offerService.updateApplication(anyLong(), anyLong(), any(Application.class)))
+                .thenReturn(invitedApplication);
+
+        mockMvc.perform(put("/offers/1/applications/1")
+                    .content(json)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.candidateEmail").value("email@email.com"))
+                .andExpect(jsonPath("$.resumeText").value("resume text"))
+                .andExpect(jsonPath("$.status").value(Status.INVITED.toString()));
     }
 }

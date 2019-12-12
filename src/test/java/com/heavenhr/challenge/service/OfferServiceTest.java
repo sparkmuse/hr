@@ -179,4 +179,30 @@ class OfferServiceTest {
 
         assertThat(actual).isEqualToComparingFieldByField(application);
     }
+
+
+    @Test
+    @DisplayName("updates and returns application for the offer")
+    void updatepplication() {
+
+        Application application = Application
+                .builder()
+                .id(1L)
+                .candidateEmail("email@email.com")
+                .resumeText("resume text")
+                .status(Status.APPLIED)
+                .build();
+        offer.getApplications().add(application);
+
+        Application expected = Application
+                .builder()
+                .status(Status.INVITED)
+                .build();
+
+        when(offerRepository.findById(1L)).thenReturn(Optional.of(offer));
+
+        Application actual = offerService.updateApplication(1L, 1L, expected);
+
+        assertThat(actual).isEqualToComparingFieldByField(expected);
+    }
 }

@@ -51,4 +51,11 @@ public class OfferController {
     public Application getApplications(@PathVariable Long offerId, @PathVariable Long applicationId) {
         return offerService.getApplication(offerId, applicationId);
     }
+
+    @PutMapping(value = "/{offerId}/applications/{applicationId}")
+    public Application updateApplication(@PathVariable Long offerId,
+                                       @PathVariable Long applicationId,
+                                       @RequestBody Application application) {
+        return offerService.updateApplication(offerId, applicationId, application);
+    }
 }

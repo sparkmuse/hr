@@ -1,5 +1,6 @@
 package com.heavenhr.challenge.service;
 
+import com.heavenhr.challenge.App;
 import com.heavenhr.challenge.entity.Application;
 import com.heavenhr.challenge.entity.ApplicationDto;
 import com.heavenhr.challenge.entity.Offer;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,12 +27,8 @@ public class OfferService {
     }
 
     public Offer getOffer(Long offerId) {
-
-        return offerRepository
-                .findById(offerId)
-                .orElseThrow(() -> new OfferNotFoundException(String.format("Offer with id=%d was not found", offerId)));
+        return getOfferInternal(offerId);
     }
-
 
     public Offer createOffer(String offerTitle) {
 
@@ -51,7 +47,7 @@ public class OfferService {
 
     public Offer createApplication(Long offerId, ApplicationDto applicationDto) {
 
-        Offer offer = getOffer(offerId);
+        Offer offer = getOfferInternal(offerId);
 
         if (hasEmail(applicationDto, offer)) {
             throw new EmailAlreadyExistsException("Email already exists for this application");
@@ -73,11 +69,34 @@ public class OfferService {
     }
 
     public Iterable<Application> getApplications(Long offerId) {
-        return getOffer(offerId).getApplications();
+        return getOfferInternal(offerId).getApplications();
     }
 
     public Application getApplication(Long offerId, Long applicationId) {
-        return getOffer(offerId).getApplications()
+        Offer offer = getOfferInternal(offerId);
+        return getApplicationInternal(offer, applicationId);
+    }
+
+    public Application updateApplication(Long offerId, Long applicationId, Application application) {
+
+        Offer offer = getOfferInternal(offerId);
+        Application found = getApplicationInternal(offer, applicationId);
+
+        found.setStatus(application.getStatus());
+
+        offerRepository.save(offer);
+
+        return application;
+    }
+
+    private Offer getOfferInternal(Long offerId) {
+        return offerRepository
+                .findById(offerId)
+                .orElseThrow(() -> new OfferNotFoundException(String.format("Offer with id=%d was not found", offerId)));
+    }
+
+    private Application getApplicationInternal(Offer offer, Long applicationId) {
+        return offer.getApplications()
                 .stream()
                 .filter(a -> a.getId().equals(applicationId))
                 .findFirst()
